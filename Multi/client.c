@@ -6,8 +6,13 @@ int main(int argc, char *argv[]){
     char *serverIP;
     char message[] = "ready";
     int number[2];
+    char buffer[RCVBUFSIZE];
     char state[2];
 
+    if(argc != 2){
+        fprintf(stderr, "Usage: %s <Server IP>\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
     serverIP = argv[1];
 
     // construct the server address structure
@@ -22,46 +27,51 @@ int main(int argc, char *argv[]){
     printf("Input money: ");
     scanf("%lf", &money);
 
-    while(1){
-        // set number to 0
-        number[0] = 0;
-        number[1] = 0;
+    while (1) {
+        // create socket using TCP (outside the loop)
+        if ((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+            DieWithError("socket() failed");
+        }
+
+        // establish the connection to the server (outside the loop)
+        if (connect(sock, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0) {
+            DieWithError("connect() failed");
+        }
 
         printf("Are you ready? [y/q]: ");
         scanf("%s", state);
-        
-        if(strcmp(state, "q")==0){
-            close(sock);
-            break;
-        }else if(strcmp(state, "y")==0){
-            // create socket using TCP
-            if((sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP))<0){
-                DieWithError("socket() failed");
-            }
-            
-            // establish the connection to the server
-            if(connect(sock, (struct sockaddr *)&serverAddress, sizeof(serverAddress))<0){
-                DieWithError("connect() failed");
-            }
+        printf("Wait until all players are ready\n");
 
-            if(send(sock, message, strlen(message), 0)<=0){
+        if (strcmp(state, "q") == 0) {
+            if (send(sock, "quit", strlen("quit"), 0) <= 0) {
                 DieWithError("send() failed");
             }
-
-            if(recv(sock, number, sizeof(number), 0)<=0){
-                DieWithError("recv() failed");
-            }else{
-                printf("received: ");
-                for(int i=0;i<2;i++){
-                    printf("%d", number[i]);
-                }
-                printf("\n");
+            break;
+        } else if (strcmp(state, "y") == 0) {
+            if (send(sock, message, strlen(message), 0) <= 0) {
+                DieWithError("send() failed");
             }
-        }else{
+            memset(buffer, 0, RCVBUFSIZE);
+
+            if (recv(sock, buffer, RCVBUFSIZE, 0) < 0) {
+                DieWithError("recv() failed");
+            } else {
+                number[0] = buffer[0]-'0';
+                number[1] = buffer[1]-'0';
+                memset(buffer, 0, RCVBUFSIZE);
+                if (recv(sock, buffer, RCVBUFSIZE, 0) < 0) {
+                    DieWithError("recv() failed");
+                }
+                printf("You got %d%d\n", number[0], number[1]);
+                memset(buffer, 0, RCVBUFSIZE);
+            }
+        } else {
             printf("Bad input\n");
         }
-        
+
+        // close the socket after the loop
         close(sock);
     }
 
+    return 0;
 }
