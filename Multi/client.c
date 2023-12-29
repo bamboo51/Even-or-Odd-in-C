@@ -59,9 +59,6 @@ int main(int argc, char *argv[]){
                 number[0] = buffer[0]-'0';
                 number[1] = buffer[1]-'0';
                 memset(buffer, 0, RCVBUFSIZE);
-                if (recv(sock, buffer, RCVBUFSIZE, 0) < 0) {
-                    DieWithError("recv() failed");
-                }
                 printf("You got %d%d\n", number[0], number[1]);
                 memset(buffer, 0, RCVBUFSIZE);
             }
