@@ -66,7 +66,6 @@ int main(int argc, char *argv[]){
             printf("Bad input\n");
         }
 
-        // close the socket after the loop
         close(sock);
     }
 
