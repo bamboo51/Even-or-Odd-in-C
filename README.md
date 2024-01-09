@@ -18,7 +18,11 @@ The `gameInstruction` function provides the basic instructions for playing the g
 
 ```c
 void gameInstruction(void){
-    // Display game instructions
+    printf("*** Game Instruction ***\n");
+    printf("1. If you are ready,\t\t\tpress 'y'\n");
+    printf("2. If you want to add more money,\tpress 'a'\n");
+    printf("   Please note that after you add money, you will have to wait for the next round\n");
+    printf("3. If you want to quit,\t\t\tpress 'q'\n");
 }
 ```
 
