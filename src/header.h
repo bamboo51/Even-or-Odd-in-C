@@ -9,6 +9,6 @@ struct client{
     int socket;
     char name[20];
     int state;
-    unsigned int money;
+    double money;
     bool answer;
 };

@@ -71,7 +71,7 @@ int main(int argc, char *argv[]){
                     // assign new client to empty client
                     clients[emptyClients[emptyClientsCount-1]].socket = newClient;
                     clientInit(&clients[emptyClients[emptyClientsCount-1]]);
-                    printf("Player %d: %s,\t%d\n", emptyClients[emptyClientsCount-1], clients[emptyClients[emptyClientsCount-1]].name, clients[emptyClients[emptyClientsCount-1]].money);
+                    printf("Player %d: %s,\t%lf\n", emptyClients[emptyClientsCount-1], clients[emptyClients[emptyClientsCount-1]].name, clients[emptyClients[emptyClientsCount-1]].money);
                     emptyClients[emptyClientsCount-1] = 0;
                     emptyClientsCount--;
                 }else{
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]){
         }
         
         // all money
-        unsigned int allMoney = 0;
+        double allMoney = 0;
 
         // check if any client is ready
         printf("Check if any client is ready\n");
@@ -107,9 +107,8 @@ int main(int argc, char *argv[]){
                         close(serverSocket);  // Close server socket before exit
                         exit(EXIT_FAILURE);
                     }
-                    printf("Player %d: %s,\t%d\n", i, clients[i].name, clients[i].money);
+                    printf("Player %d: %s,\t%lf\n", i, clients[i].name, clients[i].money);
                     allMoney += clients[i].money;
-                    clients[i].money = 0;
                 }
             }else{
                 perror("recv() failed");
@@ -124,7 +123,7 @@ int main(int argc, char *argv[]){
         numbers[1] = rand()%6+1;
         printf("Numbers: %d, %d\n", numbers[0], numbers[1]);
 
-        unsigned int guessRight = 0;
+        double guessRight = 0;
         // send numbers to all clients
         for(int i=0;i<maxClients;i++){
             if(clients[i].state==READY){
@@ -139,7 +138,7 @@ int main(int argc, char *argv[]){
                     exit(EXIT_FAILURE);
                 }
                 if(clients[i].answer==true){
-                    guessRight++;
+                    guessRight += clients[i].money;
                 }
             }
         }
@@ -150,18 +149,20 @@ int main(int argc, char *argv[]){
             printf("No one guess right\n");
             allMoney = 0;
         }else{
-            printf("%d player(s) guess right\n", guessRight);
             allMoney /= guessRight;
         }
         for(int i=0;i<maxClients;i++){
             if(clients[i].state==READY){
                 if(clients[i].answer==true){
+                    clients[i].money = allMoney*clients[i].money;
                     if(send(clients[i].socket, &allMoney, sizeof(allMoney), 0)<0){
                         perror("send() failed");
                         close(serverSocket);  // Close server socket before exit
                         exit(EXIT_FAILURE);
                     }
+                    clients[i].money = 0;
                 }else{
+                    clients[i].money = 0;
                     if(send(clients[i].socket, &(clients[i].money), sizeof(clients[i].money), 0)<0){
                         perror("send() failed");
                         close(serverSocket);  // Close server socket before exit

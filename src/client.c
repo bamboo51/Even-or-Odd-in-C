@@ -37,7 +37,7 @@ int main(int argc, char *argv[]){
 
     // set money
     printf("Initial money: ");
-    scanf("%d", &(client.money));
+    scanf("%lf", &(client.money));
 
     // game instruction
     gameInstruction();
@@ -74,20 +74,20 @@ int main(int argc, char *argv[]){
 
             // change money
             printf("Add money: ");
-            unsigned int addMoney;
-            scanf("%d", &(addMoney));
+            double addMoney;
+            scanf("%lf", &(addMoney));
             client.money += addMoney;
         }
 
         if(input=='y'){
             // input money for this round
             printf("Input money for this round: ");
-            unsigned int money;
-            scanf("%d", &(money));
+            double money;
+            scanf("%lf", &(money));
             while(money>client.money){
                 printf("You don't have enough money\n");
                 printf("Input money for this round: ");
-                scanf("%d", &(money));
+                scanf("%lf", &(money));
             }
             client.money -= money;
 
@@ -142,12 +142,13 @@ int main(int argc, char *argv[]){
             free(numbers);
 
             // receive money
+            money = 0;
             if(recv(client.socket, &(money), sizeof(money), 0)<0){
                 perror("recv() failed");
                 exit(EXIT_FAILURE);
             }
             client.money += money;
-            printf("Your money: %d\n", client.money);
+            printf("Your money: %lf\n", client.money);
         }
     }
 
