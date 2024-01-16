@@ -68,10 +68,6 @@ The server code consists of functions to initialize the server, accept connectio
 int main(int argc, char *argv[]){
     // Main server function
 }
-
-void clientInit(struct client *client){
-    // Initialize client data
-}
 ```
 
 ## Usage
@@ -96,8 +92,14 @@ Note: The port number must be greater than 1024.
 
 ## Dependencies
 
+- `stdio.h`
+- `stdlib.h`
+- `string.h`
+- `sys/socket.h`
+- `stdbool.h`
+- `netinet/in.h`
+- `arpa/inet.h`
 - `unistd.h`
-- `header.h`
 
 ## Acknowledgments
 
