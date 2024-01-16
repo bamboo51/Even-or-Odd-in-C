@@ -1,5 +1,6 @@
 #include "header.h"
 #include <pthread.h>
+#include <time.h>
 
 void showIP(void);
 int createServerSocket(unsigned short port, unsigned int maxClients);
@@ -58,6 +59,7 @@ int main(int argc, char *argv[]){
     // set empty client socket
     int *emptyClients = (int *)calloc(maxClients, sizeof(int));
 
+    srand(time(NULL));
     // loop
     while(1){
         int emptyClientsCount = 0;
