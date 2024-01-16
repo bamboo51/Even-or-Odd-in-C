@@ -1,15 +1,16 @@
 #include "header.h"
 
-void clientInit(struct client *client){
-    // initialize client
-    client->state = WAIT;
-    client->money = 0;
-    client->answer = false;
-    if(recv(client->socket, client->name, 20, 0)<0){
-        DieWithClose("recv() failed", client->socket);
-    }
+void *acceptConnections(void *arg){
+    struct client *clients = (struct client *)arg;
+    struct sockaddr_in clientAddress;
+    unsigned int clientLength = sizeof(clientAddress);
+    clients->socket = accept(clients->serverSocket, (struct sockaddr *)&clientAddress, &clientLength);
+    if(clients->socket<0) DieWithClose("accept() failed", clients->serverSocket);
+    if(recv(clients->socket, clients->name, sizeof(clients->name), 0)<0) DieWithClose("recv() failed", clients->socket);
+    return(NULL);
 }
 
+/*
 void acceptConnections(struct client *clients, int maxClients, int serverSocket){
     for(int i=0;i<maxClients;i++){
         struct sockaddr_in clientAddress;
@@ -20,6 +21,7 @@ void acceptConnections(struct client *clients, int maxClients, int serverSocket)
         printf("Player %s connected\n", clients[i].name);
     }
 }
+*/
 
 int acceptConnectionWithTimeout(int serverSocket, int timeoutInSeconds) {
     struct sockaddr_in clientAddress;
@@ -60,10 +62,11 @@ void acceptNewClients(struct client *clients, int serverSocket, int *emptyClient
             //check if there is any empty client
             if(*emptyClientsCount>0){
                 clients[emptyClients[*emptyClientsCount-1]].socket = newClientSocket;
-                clientInit(&clients[emptyClients[*emptyClientsCount-1]]);
+                clientInit(&clients[emptyClients[*emptyClientsCount-1]], serverSocket);
+                if(recv(clients[emptyClients[*emptyClientsCount-1]].socket, clients[emptyClients[*emptyClientsCount-1]].name, sizeof(clients[emptyClients[*emptyClientsCount-1]].name), 0)<0) DieWithClose("recv() failed", clients[emptyClients[*emptyClientsCount-1]].socket);
                 printf("Player %d: %s,\t%lf\n", emptyClients[*emptyClientsCount-1], clients[emptyClients[*emptyClientsCount-1]].name, clients[emptyClients[*emptyClientsCount-1]].money);
                 emptyClients[*emptyClientsCount-1] = 0;
-                *emptyClientsCount--;
+                *emptyClientsCount -= 1;
             }else{
                 close(newClientSocket);
             }

@@ -1,4 +1,11 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
 #include <stdbool.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 // define states
 #define WAIT 0
@@ -11,4 +18,9 @@ struct client{
     int state;
     double money;
     bool answer;
+    int randomNumbers[2];
+    int serverSocket;
 };
+
+void DieWithClose(char *errorMessage, int sock);
+void clientInit(struct client *client, int serverSocket);

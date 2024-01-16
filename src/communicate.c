@@ -38,4 +38,26 @@ void *checkReady(void *arg){
     return NULL;
 }
 
-void *
+void *sendNumbers(struct client *client){
+    if(client->state==READY){
+        if(send(client->socket, &(client->randomNumbers), sizeof(client->randomNumbers), 0)<0){
+            DieWithClose("send() failed", client->socket);
+        }
+        printf("Sent numbers %d%d to %s\n", client->randomNumbers[0], client->randomNumbers[1], client->name);
+        if(recv(client->socket, &(client->answer), sizeof(client->answer), 0)<0){
+            DieWithClose("recv() failed", client->socket);
+        }
+    }
+    return NULL;
+}
+
+void *sendMoney(struct client *client){
+    if(client->state==READY){
+        if(send(client->socket, &(client->money), sizeof(client->money), 0)<0){
+            DieWithClose("send() failed", client->socket);
+        }
+        printf("Sent money %lf to %s\n", client->money, client->name);
+    }
+    clientInit(client, client->serverSocket);
+    return NULL;
+}

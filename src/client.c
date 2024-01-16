@@ -1,7 +1,9 @@
 #include <unistd.h>
-#include "setServerAddress.c"
-#include "createClientSocket.c"
 #include "header.h"
+#include "functions.h"
+
+struct sockaddr_in setServerAddress(char *serverIP, unsigned short port);
+int createClientSocket(struct sockaddr_in serverAddress);
 
 void gameInstruction(void){
     printf("*** Game Instruction ***\n");
@@ -30,10 +32,7 @@ int main(int argc, char *argv[]){
     printf("Player Name: ");
     scanf("%s", client.name);
     // send name
-    if(send(client.socket, client.name, sizeof(client.name), 0)<0){
-        perror("send() failed");
-        exit(EXIT_FAILURE);
-    }
+    if(send(client.socket, client.name, sizeof(client.name), 0)<0) DieWithClose("send() failed", client.socket);
 
     // set money
     printf("Initial money: ");
@@ -43,10 +42,7 @@ int main(int argc, char *argv[]){
     gameInstruction();
     printf("Waiting for other players...\n");
     char ready[6];
-    if(recv(client.socket, ready, sizeof(ready), 0)<0){
-        perror("recv() failed");
-        exit(EXIT_FAILURE);
-    }
+    if(recv(client.socket, ready, sizeof(ready), 0)<0) DieWithClose("recv() failed", client.socket);
     printf("Other players are ready\n");
 
     //loop for game
@@ -57,20 +53,14 @@ int main(int argc, char *argv[]){
         if(input=='q'){
             // quit
             client.state = QUIT;
-            if(send(client.socket, &(client.state), sizeof(client.state), 0)<0){
-                perror("send() failed");
-                exit(EXIT_FAILURE);
-            }
+            if(send(client.socket, &(client.state), sizeof(client.state), 0)<0)DieWithClose("send() failed", client.socket);
             break;
         }
 
         if(input=='a'){
             // send state
             client.state = WAIT;
-            if(send(client.socket, &(client.state), sizeof(client.state), 0)<0){
-                perror("send() failed");
-                exit(EXIT_FAILURE);
-            }
+            if(send(client.socket, &(client.state), sizeof(client.state), 0)<0)DieWithClose("send() failed", client.socket);
 
             // change money
             printf("Add money: ");
@@ -93,16 +83,10 @@ int main(int argc, char *argv[]){
 
             // ready
             client.state = READY;
-            if(send(client.socket, &(client.state), sizeof(client.state), 0)<0){
-                perror("send() failed");
-                exit(EXIT_FAILURE);
-            }
+            if(send(client.socket, &(client.state), sizeof(client.state), 0)<0)DieWithClose("send() failed", client.socket);
 
             //send money
-            if(send(client.socket, &(money), sizeof(money), 0)<0){
-                perror("send() failed");
-                exit(EXIT_FAILURE);
-            }
+            if(send(client.socket, &(money), sizeof(money), 0)<0)DieWithClose("send() failed", client.socket);
 
             // guess even or odd
             printf("Guess even or odd (e/o): ");
@@ -110,52 +94,34 @@ int main(int argc, char *argv[]){
 
             //receive numbers
             unsigned int *numbers = (unsigned int *)calloc(2, sizeof(unsigned int));
-            if(recv(client.socket, numbers, 2*sizeof(unsigned int), 0)<0){
-                perror("recv() failed");
-                exit(EXIT_FAILURE);
-            }
-            printf("Numbers: %d, %d\n", numbers[0], numbers[1]);
+            if(recv(client.socket, numbers, 2*sizeof(unsigned int), 0)<0)DieWithClose("recv() failed", client.socket);
+            print_dice(numbers[0]);
+            print_dice(numbers[1]);
 
             // check the answer
             if((numbers[0]+numbers[1])%2==0 && input=='e'){
                 printf("You win\n");
                 client.answer = true;
-                if(send(client.socket, &(client.answer), sizeof(client.answer), 0)<0){
-                    perror("send() failed");
-                    exit(EXIT_FAILURE);
-                }
+                if(send(client.socket, &(client.answer), sizeof(client.answer), 0)<0)DieWithClose("send() failed", client.socket);
             }else if((numbers[0]+numbers[1])%2==1 && input=='o'){
                 printf("You win\n");
                 client.answer = true;
-                if(send(client.socket, &(client.answer), sizeof(client.answer), 0)<0){
-                    perror("send() failed");
-                    exit(EXIT_FAILURE);
-                }
+                if(send(client.socket, &(client.answer), sizeof(client.answer), 0)<0)DieWithClose("send() failed", client.socket);
             }else{
                 printf("You lose\n");
                 client.answer = false;
-                if(send(client.socket, &(client.answer), sizeof(client.answer), 0)<0){
-                    perror("send() failed");
-                    exit(EXIT_FAILURE);
-                }
+                if(send(client.socket, &(client.answer), sizeof(client.answer), 0)<0)DieWithClose("send() failed", client.socket);
             }
             free(numbers);
 
             // receive money
             money = 0;
-            if(recv(client.socket, &(money), sizeof(money), 0)<0){
-                perror("recv() failed");
-                exit(EXIT_FAILURE);
-            }
+            if(recv(client.socket, &(money), sizeof(money), 0)<0)DieWithClose("recv() failed", client.socket);
             client.money += money;
             printf("Your money: %lf\n", client.money);
         }
     }
 
     // Close socket
-    if (close(client.socket) < 0) {
-        perror("close() failed");
-        exit(EXIT_FAILURE);
-    }
-
+    close(client.socket);
 }
