@@ -12,6 +12,7 @@ void *checkReady(void *arg);
 void *acceptConnections(void *arg);
 void *sendNumbers(void *arg);
 void *sendMoney(void *arg);
+void *acceptNew(void *arg);
 
 // generate random number
 unsigned int *randomNumbers(void){
@@ -77,7 +78,7 @@ int main(int argc, char *argv[]){
         struct client *newClients = (struct client *)malloc(emptyClientsCount*sizeof(struct client));
         for (int i = 0; i < emptyClientsCount; i++) {
             clientInit(&newClients[i], serverSocket);
-            pthread_create(&acceptThread[i], NULL, acceptConnections, &newClients[i]);
+            pthread_create(&acceptThread[i], NULL, acceptNew, &newClients[i]);
         }
         for (int i = 0; i < emptyClientsCount; i++) {
             pthread_join(acceptThread[i], NULL);
