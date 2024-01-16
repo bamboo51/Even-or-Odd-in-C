@@ -79,7 +79,9 @@ int main(int argc, char *argv[]){
                 emptyClients[emptyClientsCount] = i;
                 emptyClientsCount++;
             }
-            money += clients[i].money;
+            if(clients[i].state==READY){
+                money += clients[i].money;
+            }
         }
         printf("All money: %lf\n", money);
 
@@ -110,12 +112,12 @@ int main(int argc, char *argv[]){
         if(winMoney==0){
             printf("No one wins\n");
         }else{
-            money /= winMoney;
+            money = money / winMoney;
         }
         for(int i=0;i<maxClients;i++){
             if(clients[i].state==READY){
                 if(clients[i].answer==true){
-                    clients[i].money *= money;
+                    clients[i].money =  clients[i].money * money;
                 }else{
                     clients[i].money = 0;
                 }
