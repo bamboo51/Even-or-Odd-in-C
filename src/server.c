@@ -53,21 +53,39 @@ int main(int argc, char *argv[]){
 
     // accept connections
     useThreads(clients, maxClients, thread, acceptConnections);
-    useThreads(clients, maxClients, thread, sendReady);
     
     // set empty client socket
     int *emptyClients = (int *)calloc(maxClients, sizeof(int));
-    int emptyClientsCount = 0;
 
     // loop
     while(1){
+        int emptyClientsCount = 0;
+        for(int i=0;i<maxClients;i++){
+            printf("Player %s: %d\n", clients[i].name, clients[i].state);
+            if(clients[i].state==QUIT){
+                emptyClients[emptyClientsCount] = i;
+                emptyClientsCount++;
+            }
+        }
         if(emptyClientsCount==maxClients){
             printf("All clients quit\n");
             break;
         }
 
-        // check if there are any new clients
-        acceptNewClients(clients, serverSocket, emptyClients, &emptyClientsCount);
+        // accept new clients
+        pthread_t acceptThread[emptyClientsCount];
+        struct client *newClients = (struct client *)malloc(emptyClientsCount*sizeof(struct client));
+        for (int i = 0; i < emptyClientsCount; i++) {
+            clientInit(&newClients[i], serverSocket);
+            pthread_create(&acceptThread[i], NULL, acceptConnections, &newClients[i]);
+        }
+        for (int i = 0; i < emptyClientsCount; i++) {
+            pthread_join(acceptThread[i], NULL);
+            clients[emptyClients[i]] = newClients[i];
+        }
+        free(newClients);
+
+        useThreads(clients, maxClients, thread, sendReady);
 
         // all money
         double money = 0;
@@ -75,10 +93,6 @@ int main(int argc, char *argv[]){
         // check if any clients are ready
         useThreads(clients, maxClients, thread, checkReady);
         for(int i=0;i<maxClients;i++){
-            if(clients[i].state==QUIT){
-                emptyClients[emptyClientsCount] = i;
-                emptyClientsCount++;
-            }
             if(clients[i].state==READY){
                 money += clients[i].money;
             }
@@ -126,6 +140,7 @@ int main(int argc, char *argv[]){
 
         // distribute money
         useThreads(clients, maxClients, thread, sendMoney);
+        
     }
     
 

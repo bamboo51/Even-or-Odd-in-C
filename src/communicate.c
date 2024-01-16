@@ -13,6 +13,7 @@ void *sendReady(void *arg){
 void *checkReady(void *arg){
     struct client *client = (struct client *)arg;
     if(recv(client->socket, &(client->state), sizeof(client->state), 0)<0){
+        printf("Player %s: ", client->name);
         DieWithClose("recv() failed", client->socket);
     }else{
         if(client->state==WAIT){
@@ -29,6 +30,7 @@ void *checkReady(void *arg){
 
         if(client->state==READY){
             if(recv(client->socket, &(client->money), sizeof(client->money), 0)<0){
+                printf("Player %s: ", client->name);
                 DieWithClose("recv() failed", client->socket);
             }
             printf("Player %s: %lf\n", client->name, client->money);
@@ -41,10 +43,12 @@ void *checkReady(void *arg){
 void *sendNumbers(struct client *client){
     if(client->state==READY){
         if(send(client->socket, &(client->randomNumbers), sizeof(client->randomNumbers), 0)<0){
+            printf("Player %s: ", client->name);
             DieWithClose("send() failed", client->socket);
         }
         printf("Sent numbers %d%d to %s\n", client->randomNumbers[0], client->randomNumbers[1], client->name);
         if(recv(client->socket, &(client->answer), sizeof(client->answer), 0)<0){
+            printf("Player %s: ", client->name);
             DieWithClose("recv() failed", client->socket);
         }
     }
@@ -54,6 +58,7 @@ void *sendNumbers(struct client *client){
 void *sendMoney(struct client *client){
     if(client->state==READY){
         if(send(client->socket, &(client->money), sizeof(client->money), 0)<0){
+            printf("Player %s: ", client->name);
             DieWithClose("send() failed", client->socket);
         }
         printf("Sent money %lf to %s\n", client->money, client->name);

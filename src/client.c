@@ -41,12 +41,11 @@ int main(int argc, char *argv[]){
     // game instruction
     gameInstruction();
     printf("Waiting for other players...\n");
-    char ready[6];
-    if(recv(client.socket, ready, sizeof(ready), 0)<0) DieWithClose("recv() failed", client.socket);
-    printf("Other players are ready\n");
 
     //loop for game
     while(1){
+        char ready[6];
+        if(recv(client.socket, ready, sizeof(ready), 0)<0) DieWithClose("recv() failed", client.socket);
         printf("Are you ready? (y/a/q): ");
         char input;
         scanf(" %c", &input);
