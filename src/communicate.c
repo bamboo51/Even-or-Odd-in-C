@@ -3,10 +3,12 @@
 
 void *sendReady(void *arg){
     struct client *client = (struct client *)arg;
-    if(send(client->socket, "ready", 6, 0)<0){
-        DieWithClose("send() failed", client->socket);
+    if(client->state!=QUIT){
+        if(send(client->socket, "ready", 6, 0)<0){
+            DieWithClose("send() failed", client->socket);
+        }
+        printf("Sent ready to %s\n", client->name);
     }
-    printf("Sent ready to %s\n", client->name);
     return NULL;
 }
 

@@ -29,10 +29,13 @@ void *acceptNew(void *arg){
     // Wait for a connection with a timeout
     int ready = select(clients->serverSocket + 1, &readSet, NULL, NULL, &timeout);
     if (ready == -1) {
+        clients->state = QUIT;
         DieWithClose("select() failed", clients->serverSocket);
     } else if (ready == 0) {
         // Timeout occurred
         printf("Connection timeout\n");
+        clients->state = QUIT;
+        close(clients->socket);
         // You can handle this case according to your needs, for example, return from the function or exit the program.
         return NULL;
     } else {
